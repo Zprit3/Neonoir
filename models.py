@@ -110,7 +110,7 @@ class CasillaContenido(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     casillaId = db.Column(db.Integer, db.ForeignKey('casilla.id'), nullable=False)
     contenidoId = db.Column(db.Integer)
-    contenidoTipo = db.Column(db.String(50)) # "enemigo", "evento", "zona", "npc", "tienda", "inicio", "descanso", "vacia"
+    contenidoTipo = db.Column(db.String(50)) # "enemigo", "evento", "zona", "npc", "tienda", "inicio", "descanso"
     
 class Tienda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
