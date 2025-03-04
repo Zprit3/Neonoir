@@ -16,4 +16,8 @@ def iniciar_combate(partida_id, personaje_id, enemigo_id):
         dmg = (ataque_enemigo - ataque_personaje) + 3
         personaje.vida -= dmg
 
+    if enemigo.vida <= 0:
+        # Aumentar la probabilidad de objeto de victoria
+        personaje.probabilidad_objeto_victoria += 3 #aumenta un 3%
+
     db.session.commit()

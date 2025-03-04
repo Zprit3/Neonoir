@@ -92,6 +92,9 @@ class PersonajePartida(db.Model):
     personajeId = db.Column(db.Integer, db.ForeignKey('personaje.id'), nullable=False)
     posicion = db.Column(db.Integer, default=0)
     vida = db.Column(db.Integer)
+    debuffs = db.Column(db.JSON, default={})
+    zonas_visitadas = db.Column(db.JSON, default=[])  # Lista de zonaId visitadas
+    probabilidad_objeto_victoria = db.Column(db.Integer, default=1)  # Probabilidad inicial del 1%
 
 class PersonajeTarjetas(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -107,4 +110,9 @@ class CasillaContenido(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     casillaId = db.Column(db.Integer, db.ForeignKey('casilla.id'), nullable=False)
     contenidoId = db.Column(db.Integer)
-    contenidoTipo = db.Column(db.String(50))
+    contenidoTipo = db.Column(db.String(50)) # "enemigo", "evento", "zona", "npc", "tienda", "inicio", "descanso", "vacia"
+    
+class Tienda(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(80), nullable=False)
+    tarjetas_venta = db.Column(db.JSON, default=[])  # Lista de tarjetas y precios
