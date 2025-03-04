@@ -1,5 +1,5 @@
 from extensions import db
-from models import PersonajePartida
+from models import PersonajePartida, Npc
 
 def aplicar_efecto_evento(personaje, evento, partida_id):
     personaje_partida = PersonajePartida.query.filter_by(partidaId=partida_id, personajeId=personaje.id).first()
@@ -15,7 +15,13 @@ def aplicar_efecto_evento(personaje, evento, partida_id):
 
     # Debuffs
     if evento.debuffEstadistica:
-        # Lógica para aplicar el debuff (por ejemplo, agregar a un diccionario de debuffs en PersonajePartida)
-        pass
+        personaje_partida.debuffs[evento.debuffEstadistica] = 3 #3 es la cantidad de turnos que dura el debuff
+
+    # Aparición de NPC
+    if evento.npcId:
+        npc = Npc.query.get(evento.npcId)
+        if npc:
+            print(npc.dialogo) #muestra el dialogo del npc
+            #puedes agregar aqui logica para que el npc se quede en la casilla o se mueva
 
     db.session.commit()

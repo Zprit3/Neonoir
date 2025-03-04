@@ -1,27 +1,34 @@
-from flask import Flask
+from flask import Flask, render_template, url_for
 from extensions import db
-from rutas import jugadores, personajes, casillas, tarjetas, partidas, enemigos, eventos, zonas, npcs, objetosVictoria, casillasEstados, personajesPartidas
+from rutas import jugadores, personajes, casillas, tarjetas, partidas, enemigos, eventos, zonas, npc, objetos_victoria, casillas_estados, personajes_partidas, tiendas
+from admin import init_app
 
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///neonoir.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = '5cd4c0b4429feee653e0d98bd53c801e'
 
     db.init_app(app)
+    init_app(app)
 
-    # Registrar Blueprints
-    app.register_blueprint(jugadores.jugadoresBp, url_prefix='/jugadores')
-    app.register_blueprint(personajes.personajesBp, url_prefix='/personajes')
-    app.register_blueprint(casillas.casillasBp, url_prefix='/casillas')
-    app.register_blueprint(tarjetas.tarjetasBp, url_prefix='/tarjetas')
-    app.register_blueprint(partidas.partidasBp, url_prefix='/partidas')
-    app.register_blueprint(enemigos.enemigosBp, url_prefix='/enemigos')
-    app.register_blueprint(eventos.eventosBp, url_prefix='/eventos')
-    app.register_blueprint(zonas.zonasBp, url_prefix='/zonas')
-    app.register_blueprint(npcs.npcsBp, url_prefix='/npcs')
-    app.register_blueprint(objetosVictoria.objetosVictoriaBp, url_prefix='/objetosVictoria')
-    app.register_blueprint(casillasEstados.casillasEstadosBp, url_prefix='/casillasEstados')
-    app.register_blueprint(personajesPartidas.personajesPartidasBp, url_prefix='/personajesPartidas')
+    app.register_blueprint(jugadores.jugadores_bp, url_prefix='/jugadores')
+    app.register_blueprint(personajes.personajes_bp, url_prefix='/personajes')
+    app.register_blueprint(casillas.casillas_bp, url_prefix='/casillas')
+    app.register_blueprint(tarjetas.tarjetas_bp, url_prefix='/tarjetas')
+    app.register_blueprint(partidas.partidas_bp, url_prefix='/partidas')
+    app.register_blueprint(enemigos.enemigos_bp, url_prefix='/enemigos')
+    app.register_blueprint(eventos.eventos_bp, url_prefix='/eventos')
+    app.register_blueprint(zonas.zonas_bp, url_prefix='/zonas')
+    app.register_blueprint(npc.npc_bp, url_prefix='/npc')
+    app.register_blueprint(objetos_victoria.objetos_victoria_bp, url_prefix='/objetos_victoria')
+    app.register_blueprint(casillas_estados.casillas_estados_bp, url_prefix='/casillas_estados')
+    app.register_blueprint(personajes_partidas.personajes_partidas_bp, url_prefix='/personajes_partidas')
+    app.register_blueprint(tiendas.tiendas_bp, url_prefix='/tiendas')
+
+    @app.route('/')
+    def index():
+        return render_template('index.html')
 
     with app.app_context():
         db.create_all()
