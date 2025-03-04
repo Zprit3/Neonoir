@@ -25,6 +25,8 @@ class Tarjeta(db.Model):
     tipo = db.Column(db.String(50), nullable=False)
     efecto = db.Column(db.String(200))
     duracion = db.Column(db.Integer)
+    unica = db.Column(db.Boolean, default=False)
+
 
 class Partida(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,8 +45,29 @@ class Evento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(80), nullable=False)
     descripcion = db.Column(db.String(200))
-    vidaModificacion = db.Column(db.Integer, default=0)
-    oroModificacion = db.Column(db.Integer, default=0)
+    avanceCasillas = db.Column(db.Integer, default=0)
+    modificacionOro = db.Column(db.Integer, default=0)
+    modificacionVida = db.Column(db.Integer, default=0)
+    debuffEstadistica = db.Column(db.String(50))
+    duracionDebuffCasillas = db.Column(db.Integer, default=0)
+    npcId = db.Column(db.Integer, db.ForeignKey('npc.id'))
+
+class Zona(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipoZona = db.Column(db.String(20), nullable=False) # "positiva", "negativa", "neutra"
+
+    # Campos para Zonas Positivas
+    recuperacionVida = db.Column(db.Integer, default=0)
+    limpiarDebuffs = db.Column(db.Boolean, default=False)
+    probabilidadObjetoVictoria = db.Column(db.Integer, default=0)
+
+    # Campos para Zonas Negativas
+    modificacionVida = db.Column(db.Integer, default=0)
+    debuffEstadistica = db.Column(db.String(50))
+    retornoZonaDescanso = db.Column(db.Boolean, default=False)
+
+    # Campos para Zonas Neutras
+    descripcion = db.Column(db.String(200))
 
 class Npc(db.Model):
     id = db.Column(db.Integer, primary_key=True)
