@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import Tarjeta
 
 tarjetas_bp = Blueprint('tarjetas', __name__)
 
 @tarjetas_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_tarjetas():
     tarjetas = Tarjeta.query.all()
     lista_tarjetas = [{'id': tarjeta.id, 'nombre': tarjeta.nombre, 'descripcion': tarjeta.descripcion, 'tipo': tarjeta.tipo, 'efecto': tarjeta.efecto, 'duracion': tarjeta.duracion} for tarjeta in tarjetas]
     return jsonify(lista_tarjetas)
 
 @tarjetas_bp.route('/<int:tarjeta_id>', methods=['GET'])
+@csrf.exempt
 def obtener_tarjeta(tarjeta_id):
     tarjeta = Tarjeta.query.get(tarjeta_id)
     if not tarjeta:
@@ -19,6 +21,8 @@ def obtener_tarjeta(tarjeta_id):
 
 @tarjetas_bp.route('/', methods=['POST'])
 def crear_tarjeta():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     nombre = data.get('nombre')
     tipo = data.get('tipo')
@@ -31,6 +35,8 @@ def crear_tarjeta():
 
 @tarjetas_bp.route('/<int:tarjeta_id>', methods=['PUT'])
 def actualizar_tarjeta(tarjeta_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     tarjeta = Tarjeta.query.get(tarjeta_id)
     if not tarjeta:
         return jsonify({'mensaje': 'Tarjeta no encontrada'}), 404
@@ -45,6 +51,8 @@ def actualizar_tarjeta(tarjeta_id):
 
 @tarjetas_bp.route('/<int:tarjeta_id>', methods=['DELETE'])
 def eliminar_tarjeta(tarjeta_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     tarjeta = Tarjeta.query.get(tarjeta_id)
     if not tarjeta:
         return jsonify({'mensaje': 'Tarjeta no encontrada'}), 404

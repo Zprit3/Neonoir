@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import ObjetoVictoria
 
 objetos_victoria_bp = Blueprint('objetos_victoria', __name__)
 
 @objetos_victoria_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_objetos_victoria():
     objetos_victoria = ObjetoVictoria.query.all()
     lista_objetos_victoria = [{'id': objeto_victoria.id, 'nombre': objeto_victoria.nombre, 'descripcion': objeto_victoria.descripcion} for objeto_victoria in objetos_victoria]
     return jsonify(lista_objetos_victoria)
 
 @objetos_victoria_bp.route('/<int:objeto_victoria_id>', methods=['GET'])
+@csrf.exempt
 def obtener_objeto_victoria(objeto_victoria_id):
     objeto_victoria = ObjetoVictoria.query.get(objeto_victoria_id)
     if not objeto_victoria:
@@ -19,6 +21,8 @@ def obtener_objeto_victoria(objeto_victoria_id):
 
 @objetos_victoria_bp.route('/', methods=['POST'])
 def crear_objeto_victoria():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     nombre = data.get('nombre')
     descripcion = data.get('descripcion')
@@ -31,6 +35,8 @@ def crear_objeto_victoria():
 
 @objetos_victoria_bp.route('/<int:objeto_victoria_id>', methods=['PUT'])
 def actualizar_objeto_victoria(objeto_victoria_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     objeto_victoria = ObjetoVictoria.query.get(objeto_victoria_id)
     if not objeto_victoria:
         return jsonify({'mensaje': 'Objeto de victoria no encontrado'}), 404
@@ -42,6 +48,8 @@ def actualizar_objeto_victoria(objeto_victoria_id):
 
 @objetos_victoria_bp.route('/<int:objeto_victoria_id>', methods=['DELETE'])
 def eliminar_objeto_victoria(objeto_victoria_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     objeto_victoria = ObjetoVictoria.query.get(objeto_victoria_id)
     if not objeto_victoria:
         return jsonify({'mensaje': 'Objeto de victoria no encontrado'}), 404

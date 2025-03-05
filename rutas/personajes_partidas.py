@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import PersonajePartida
 
 personajes_partidas_bp = Blueprint('personajes_partidas', __name__)
 
 @personajes_partidas_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_personajes_partidas():
     personajes_partidas = PersonajePartida.query.all()
     lista_personajes_partidas = [{'id': personaje_partida.id, 'partidaId': personaje_partida.partidaId, 'personajeId': personaje_partida.personajeId, 'posicion': personaje_partida.posicion, 'vida': personaje_partida.vida} for personaje_partida in personajes_partidas]
     return jsonify(lista_personajes_partidas)
 
 @personajes_partidas_bp.route('/<int:personaje_partida_id>', methods=['GET'])
+@csrf.exempt
 def obtener_personaje_partida(personaje_partida_id):
     personaje_partida = PersonajePartida.query.get(personaje_partida_id)
     if not personaje_partida:
@@ -19,6 +21,8 @@ def obtener_personaje_partida(personaje_partida_id):
 
 @personajes_partidas_bp.route('/', methods=['POST'])
 def crear_personaje_partida():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     partida_id = data.get('partidaId')
     personaje_id = data.get('personajeId')
@@ -31,6 +35,8 @@ def crear_personaje_partida():
 
 @personajes_partidas_bp.route('/<int:personaje_partida_id>', methods=['PUT'])
 def actualizar_personaje_partida(personaje_partida_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     personaje_partida = PersonajePartida.query.get(personaje_partida_id)
     if not personaje_partida:
         return jsonify({'mensaje': 'Estado de personaje en partida no encontrado'}), 404
@@ -44,6 +50,8 @@ def actualizar_personaje_partida(personaje_partida_id):
 
 @personajes_partidas_bp.route('/<int:personaje_partida_id>', methods=['DELETE'])
 def eliminar_personaje_partida(personaje_partida_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     personaje_partida = PersonajePartida.query.get(personaje_partida_id)
     if not personaje_partida:
         return jsonify({'mensaje': 'Estado de personaje en partida no encontrado'}), 404

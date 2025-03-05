@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import Casilla
 
 casillas_bp = Blueprint('casillas', __name__)
 
 @casillas_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_casillas():
     casillas = Casilla.query.all()
     lista_casillas = [{'id': casilla.id, 'tipo': casilla.tipo} for casilla in casillas]
     return jsonify(lista_casillas)
 
 @casillas_bp.route('/<int:casilla_id>', methods=['GET'])
+@csrf.exempt
 def obtener_casilla(casilla_id):
     casilla = Casilla.query.get(casilla_id)
     if not casilla:
@@ -19,6 +21,8 @@ def obtener_casilla(casilla_id):
 
 @casillas_bp.route('/', methods=['POST'])
 def crear_casilla():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     tipo = data.get('tipo')
     if not tipo:
@@ -30,6 +34,8 @@ def crear_casilla():
 
 @casillas_bp.route('/<int:casilla_id>', methods=['PUT'])
 def actualizar_casilla(casilla_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     casilla = Casilla.query.get(casilla_id)
     if not casilla:
         return jsonify({'mensaje': 'Casilla no encontrada'}), 404
@@ -40,6 +46,8 @@ def actualizar_casilla(casilla_id):
 
 @casillas_bp.route('/<int:casilla_id>', methods=['DELETE'])
 def eliminar_casilla(casilla_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     casilla = Casilla.query.get(casilla_id)
     if not casilla:
         return jsonify({'mensaje': 'Casilla no encontrada'}), 404

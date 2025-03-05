@@ -1,17 +1,19 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import Enemigo, PersonajePartida, Tarjeta, PersonajeTarjetas
 import random
 
 enemigos_bp = Blueprint('enemigos', __name__)
 
 @enemigos_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_enemigos():
     enemigos = Enemigo.query.all()
     lista_enemigos = [{'id': enemigo.id, 'nombre': enemigo.nombre, 'vida': enemigo.vida, 'tipo': enemigo.tipo, 'oroDrop': enemigo.oroDrop, 'tarjetaDropId': enemigo.tarjetaDropId} for enemigo in enemigos]
     return jsonify(lista_enemigos)
 
 @enemigos_bp.route('/<int:enemigo_id>', methods=['GET'])
+@csrf.exempt
 def obtener_enemigo(enemigo_id):
     enemigo = Enemigo.query.get(enemigo_id)
     if not enemigo:
@@ -20,6 +22,8 @@ def obtener_enemigo(enemigo_id):
 
 @enemigos_bp.route('/', methods=['POST'])
 def crear_enemigo():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     nombre = data.get('nombre')
     vida = data.get('vida')
@@ -33,6 +37,8 @@ def crear_enemigo():
 
 @enemigos_bp.route('/<int:enemigo_id>', methods=['PUT'])
 def actualizar_enemigo(enemigo_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     enemigo = Enemigo.query.get(enemigo_id)
     if not enemigo:
         return jsonify({'mensaje': 'Enemigo no encontrado'}), 404
@@ -47,6 +53,8 @@ def actualizar_enemigo(enemigo_id):
 
 @enemigos_bp.route('/<int:enemigo_id>', methods=['DELETE'])
 def eliminar_enemigo(enemigo_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     enemigo = Enemigo.query.get(enemigo_id)
     if not enemigo:
         return jsonify({'mensaje': 'Enemigo no encontrado'}), 404
@@ -56,6 +64,8 @@ def eliminar_enemigo(enemigo_id):
 
 @enemigos_bp.route('/<int:enemigo_id>/derrotar/<int:personaje_partida_id>', methods=['POST'])
 def derrotar_enemigo(enemigo_id, personaje_partida_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     enemigo = Enemigo.query.get(enemigo_id)
     personaje_partida = PersonajePartida.query.get(personaje_partida_id)
 

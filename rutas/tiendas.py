@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import Tienda, Tarjeta, PersonajePartida, PersonajeTarjetas
 
 tiendas_bp = Blueprint('tiendas', __name__)
 
 @tiendas_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_tiendas():
     tiendas = Tienda.query.all()
     lista_tiendas = [{'id': tienda.id, 'nombre': tienda.nombre, 'tarjetas_venta': tienda.tarjetas_venta} for tienda in tiendas]
     return jsonify(lista_tiendas)
 
 @tiendas_bp.route('/<int:tienda_id>', methods=['GET'])
+@csrf.exempt
 def obtener_tienda(tienda_id):
     tienda = Tienda.query.get(tienda_id)
     if not tienda:
@@ -19,6 +21,8 @@ def obtener_tienda(tienda_id):
 
 @tiendas_bp.route('/', methods=['POST'])
 def crear_tienda():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     nombre = data.get('nombre')
     tarjetas_venta = data.get('tarjetas_venta')
@@ -31,6 +35,8 @@ def crear_tienda():
 
 @tiendas_bp.route('/<int:tienda_id>', methods=['PUT'])
 def actualizar_tienda(tienda_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     tienda = Tienda.query.get(tienda_id)
     if not tienda:
         return jsonify({'mensaje': 'Tienda no encontrada'}), 404
@@ -42,6 +48,8 @@ def actualizar_tienda(tienda_id):
 
 @tiendas_bp.route('/<int:tienda_id>', methods=['DELETE'])
 def eliminar_tienda(tienda_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     tienda = Tienda.query.get(tienda_id)
     if not tienda:
         return jsonify({'mensaje': 'Tienda no encontrada'}), 404
@@ -50,6 +58,7 @@ def eliminar_tienda(tienda_id):
     return jsonify({'mensaje': 'Tienda eliminada'})
 
 @tiendas_bp.route('/<int:tienda_id>/tarjetas', methods=['GET'])
+@csrf.exempt
 def obtener_tarjetas_tienda(tienda_id):
     tienda = Tienda.query.get(tienda_id)
     if not tienda:
@@ -58,6 +67,8 @@ def obtener_tarjetas_tienda(tienda_id):
 
 @tiendas_bp.route('/<int:tienda_id>/comprar/<int:personaje_partida_id>/<int:tarjeta_id>', methods=['POST'])
 def comprar_tarjeta(tienda_id, personaje_partida_id, tarjeta_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     tienda = Tienda.query.get(tienda_id)
     personaje_partida = PersonajePartida.query.get(personaje_partida_id)
     tarjeta = Tarjeta.query.get(tarjeta_id)

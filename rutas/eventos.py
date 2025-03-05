@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import Evento
 
 eventos_bp = Blueprint('eventos', __name__)
 
 @eventos_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_eventos():
     eventos = Evento.query.all()
     lista_eventos = [{'id': evento.id, 'nombre': evento.nombre, 'descripcion': evento.descripcion, 'avanceCasillas': evento.avanceCasillas, 'modificacionOro': evento.modificacionOro, 'modificacionVida': evento.modificacionVida, 'debuffEstadistica': evento.debuffEstadistica, 'duracionDebuffCasillas': evento.duracionDebuffCasillas, 'npcId': evento.npcId} for evento in eventos]
     return jsonify(lista_eventos)
 
 @eventos_bp.route('/<int:evento_id>', methods=['GET'])
+@csrf.exempt
 def obtener_evento(evento_id):
     evento = Evento.query.get(evento_id)
     if not evento:
@@ -19,6 +21,8 @@ def obtener_evento(evento_id):
 
 @eventos_bp.route('/', methods=['POST'])
 def crear_evento():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     nombre = data.get('nombre')
     descripcion = data.get('descripcion')
@@ -31,6 +35,8 @@ def crear_evento():
 
 @eventos_bp.route('/<int:evento_id>', methods=['PUT'])
 def actualizar_evento(evento_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     evento = Evento.query.get(evento_id)
     if not evento:
         return jsonify({'mensaje': 'Evento no encontrado'}), 404
@@ -48,6 +54,8 @@ def actualizar_evento(evento_id):
 
 @eventos_bp.route('/<int:evento_id>', methods=['DELETE'])
 def eliminar_evento(evento_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     evento = Evento.query.get(evento_id)
     if not evento:
         return jsonify({'mensaje': 'Evento no encontrado'}), 404

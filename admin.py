@@ -3,18 +3,15 @@ from flask_admin.contrib.sqla import ModelView
 from extensions import db
 from models import Jugador, Personaje, Casilla, Tarjeta, Partida, Enemigo, Evento, Zona, Npc, ObjetoVictoria, CasillaEstado, PersonajePartida, PersonajeTarjetas, Tablero, CasillaContenido, Tienda
 from wtforms.fields import PasswordField
-from wtforms.validators import DataRequired
+from flask_admin.form import SecureForm
 
 class JugadorView(ModelView):
     form_overrides = dict(contrasena=PasswordField)
-    
-    form_args = {
-        'nombreUsuario': {
-            'validators': [DataRequired()]
-        }
-    }
+    form_base_class = SecureForm
 
-
+    def on_model_change(self, form, model, is_created):
+        if form.contrasena.data:
+            model.set_password(form.contrasena.data)
 
 admin = Admin(name='Admin Panel', template_mode='bootstrap3')
 

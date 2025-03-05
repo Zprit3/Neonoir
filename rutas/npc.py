@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import Npc
 
 npc_bp = Blueprint('npcs', __name__)
 
 @npc_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_npcs():
     npcs = Npc.query.all()
     lista_npcs = [{'id': npc.id, 'nombre': npc.nombre, 'dialogo': npc.dialogo} for npc in npcs]
     return jsonify(lista_npcs)
 
 @npc_bp.route('/<int:npc_id>', methods=['GET'])
+@csrf.exempt
 def obtener_npc(npc_id):
     npc = Npc.query.get(npc_id)
     if not npc:
@@ -19,6 +21,8 @@ def obtener_npc(npc_id):
 
 @npc_bp.route('/', methods=['POST'])
 def crear_npc():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     nombre = data.get('nombre')
     dialogo = data.get('dialogo')
@@ -31,6 +35,8 @@ def crear_npc():
 
 @npc_bp.route('/<int:npc_id>', methods=['PUT'])
 def actualizar_npc(npc_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     npc = Npc.query.get(npc_id)
     if not npc:
         return jsonify({'mensaje': 'NPC no encontrado'}), 404
@@ -42,6 +48,8 @@ def actualizar_npc(npc_id):
 
 @npc_bp.route('/<int:npc_id>', methods=['DELETE'])
 def eliminar_npc(npc_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     npc = Npc.query.get(npc_id)
     if not npc:
         return jsonify({'mensaje': 'NPC no encontrado'}), 404

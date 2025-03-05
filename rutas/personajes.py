@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import Personaje
 
 personajes_bp = Blueprint('personajes', __name__)
 
 @personajes_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_personajes():
     personajes = Personaje.query.all()
     lista_personajes = [{'id': personaje.id, 'nombre': personaje.nombre, 'vida': personaje.vida, 'estadisticaPrincipal': personaje.estadisticaPrincipal, 'oro': personaje.oro} for personaje in personajes]
     return jsonify(lista_personajes)
 
 @personajes_bp.route('/<int:personaje_id>', methods=['GET'])
+@csrf.exempt
 def obtener_personaje(personaje_id):
     personaje = Personaje.query.get(personaje_id)
     if not personaje:
@@ -19,6 +21,8 @@ def obtener_personaje(personaje_id):
 
 @personajes_bp.route('/', methods=['POST'])
 def crear_personaje():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     jugador_id = data.get('jugadorId')
     nombre = data.get('nombre')
@@ -31,6 +35,8 @@ def crear_personaje():
 
 @personajes_bp.route('/<int:personaje_id>', methods=['PUT'])
 def actualizar_personaje(personaje_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     personaje = Personaje.query.get(personaje_id)
     if not personaje:
         return jsonify({'mensaje': 'Personaje no encontrado'}), 404
@@ -44,6 +50,8 @@ def actualizar_personaje(personaje_id):
 
 @personajes_bp.route('/<int:personaje_id>', methods=['DELETE'])
 def eliminar_personaje(personaje_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     personaje = Personaje.query.get(personaje_id)
     if not personaje:
         return jsonify({'mensaje': 'Personaje no encontrado'}), 404

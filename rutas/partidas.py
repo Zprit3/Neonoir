@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import (
     Partida,
     Tablero,
     Casilla,
     PersonajePartida,
     Personaje,
-    Casilla,
     CasillaContenido,
     Zona,
     Enemigo,
@@ -29,6 +28,8 @@ def lanzar_dados():
 
 @partidas_bp.route('/', methods=['POST'])
 def crear_partida():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     nombre = data.get('nombre')
     tamano_tablero = data.get('tamano_tablero')
@@ -50,6 +51,7 @@ def crear_partida():
 
 
 @partidas_bp.route("/<int:partida_id>", methods=["GET"])
+@csrf.exempt
 def obtener_partida(partida_id):
     partida = Partida.query.get(partida_id)
     if not partida:
@@ -61,6 +63,8 @@ def obtener_partida(partida_id):
 
 @partidas_bp.route("/<int:partida_id>/unirse", methods=["POST"])
 def unirse_partida(partida_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     personaje_id = data.get("personajeId")
     partida = Partida.query.get(partida_id)
@@ -77,6 +81,8 @@ def unirse_partida(partida_id):
 
 @partidas_bp.route("/<int:partida_id>/mover", methods=["POST"])
 def mover_personaje(partida_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     personaje_id = data.get("personajeId")
     partida = Partida.query.get(partida_id)

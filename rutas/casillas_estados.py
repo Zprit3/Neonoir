@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from extensions import db, csrf
 from models import CasillaEstado
 
 casillas_estados_bp = Blueprint('casillas_estados', __name__)
 
 @casillas_estados_bp.route('/', methods=['GET'])
+@csrf.exempt
 def obtener_casillas_estados():
     casillas_estados = CasillaEstado.query.all()
     lista_casillas_estados = [{'id': casilla_estado.id, 'partidaId': casilla_estado.partidaId, 'casillaId': casilla_estado.casillaId, 'contenidoId': casilla_estado.contenidoId, 'contenidoTipo': casilla_estado.contenidoTipo} for casilla_estado in casillas_estados]
     return jsonify(lista_casillas_estados)
 
 @casillas_estados_bp.route('/<int:casilla_estado_id>', methods=['GET'])
+@csrf.exempt
 def obtener_casilla_estado(casilla_estado_id):
     casilla_estado = CasillaEstado.query.get(casilla_estado_id)
     if not casilla_estado:
@@ -19,6 +21,8 @@ def obtener_casilla_estado(casilla_estado_id):
 
 @casillas_estados_bp.route('/', methods=['POST'])
 def crear_casilla_estado():
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     data = request.get_json()
     partida_id = data.get('partidaId')
     casilla_id = data.get('casillaId')
@@ -33,6 +37,8 @@ def crear_casilla_estado():
 
 @casillas_estados_bp.route('/<int:casilla_estado_id>', methods=['PUT'])
 def actualizar_casilla_estado(casilla_estado_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     casilla_estado = CasillaEstado.query.get(casilla_estado_id)
     if not casilla_estado:
         return jsonify({'mensaje': 'Estado de casilla no encontrado'}), 404
@@ -46,6 +52,8 @@ def actualizar_casilla_estado(casilla_estado_id):
 
 @casillas_estados_bp.route('/<int:casilla_estado_id>', methods=['DELETE'])
 def eliminar_casilla_estado(casilla_estado_id):
+    if not csrf.validate_csrf(request.headers.get('X-CSRFToken')):
+        return jsonify({'mensaje': 'CSRF token inválido'}), 400
     casilla_estado = CasillaEstado.query.get(casilla_estado_id)
     if not casilla_estado:
         return jsonify({'mensaje': 'Estado de casilla no encontrado'}), 404

@@ -1,7 +1,8 @@
 from flask import Flask, render_template, url_for
-from extensions import db
+from extensions import db, csrf
 from rutas import jugadores, personajes, casillas, tarjetas, partidas, enemigos, eventos, zonas, npc, objetos_victoria, casillas_estados, personajes_partidas, tiendas
 from admin import init_app
+from csrf import csrf_bp
 
 def create_app():
     app = Flask(__name__)
@@ -10,8 +11,9 @@ def create_app():
     app.config['SECRET_KEY'] = '5cd4c0b4429feee653e0d98bd53c801e'
 
     db.init_app(app)
+    csrf.init_app(app)
     init_app(app)
-
+    app.register_blueprint(csrf_bp)
     app.register_blueprint(jugadores.jugadores_bp, url_prefix='/jugadores')
     app.register_blueprint(personajes.personajes_bp, url_prefix='/personajes')
     app.register_blueprint(casillas.casillas_bp, url_prefix='/casillas')

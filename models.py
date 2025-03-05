@@ -1,10 +1,18 @@
 from extensions import db
+from wtforms.validators import DataRequired
+import bcrypt
 
 class Jugador(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nombreUsuario = db.Column(db.String(80), unique=True, nullable=False)
-    contrasena = db.Column(db.String(120), nullable=False)
+    nombreUsuario = db.Column(db.String(80), unique=True, nullable=False, info={'validators': [DataRequired()]})
+    contrasena = db.Column(db.String(128), nullable=False) # Cambiar a String(128) para el hash
     puntaje = db.Column(db.Integer, default=0)
+
+    def set_password(self, password):
+        self.contrasena = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    def check_password(self, password):
+        return bcrypt.checkpw(password.encode('utf-8'), self.contrasena.encode('utf-8'))
 
 class Personaje(db.Model):
     id = db.Column(db.Integer, primary_key=True)
