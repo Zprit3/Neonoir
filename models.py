@@ -42,7 +42,7 @@ class Tarjeta(db.Model):
     efecto = db.Column(db.String(200))
     duracion = db.Column(db.Integer)
     unica = db.Column(db.Boolean, default=False)
-    valor = db.Column(db.Integer, default=0)  # Nuevo atributo
+    valor = db.Column(db.Integer, default=0)
     enemigos = db.relationship('Enemigo', secondary='enemigo_tarjetas', back_populates='tarjetas')
 
 class Partida(db.Model):
